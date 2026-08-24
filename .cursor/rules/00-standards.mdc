@@ -1,0 +1,22 @@
+---
+description: Mandatory international/industry standards for all design and code
+alwaysApply: true
+---
+
+# Standards (always)
+
+Every screen and change must satisfy these. Detail rules in this folder apply when matching files exist.
+
+**Interaction (ISO 9241-110):** 7.1 task suitability, 7.2 self-descriptiveness, 7.3 conformity with expectations, 7.5 controllability, 7.6 error tolerance.
+
+**Visual (ISO 9241-125, ISO/IEC 25010 UI aesthetics):** grid, type hierarchy, grouping, tokens, all UI states visible.
+
+**Access (ISO 9241-171, WCAG 2.2 AA, ISO/IEC 40500):** contrast, not color-only, focus, 24×24px min / **44×44px** shop-floor targets.
+
+**Data:** ISO 8601 datetimes (store UTC, show `Africa/Lagos`); ISO 4217 `NGN` as integer kobo.
+
+**Security/privacy:** OWASP (Prisma only, no secrets in git); NDPR — collect only needed customer PII; audit mutations.
+
+**Look:** Finora-style dashboard — [docs/design/ui-reference.png](docs/design/ui-reference.png) and `design-ui.mdc`. Same tokens on every screen.
+
+Do not ship a control, color, or copy that fights these rules. Prefer one extra click of clarity over clever UI.

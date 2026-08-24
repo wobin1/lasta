@@ -1,0 +1,23 @@
+---
+description: OWASP baseline and NDPR data minimisation
+globs: "**/*.{ts,tsx,js}"
+alwaysApply: false
+---
+
+# Security and privacy
+
+## OWASP
+- All DB access through **Prisma** (no string-concat SQL).
+- Auth on every mutation. Authorize by role (see implementation plan matrix).
+- Never commit `.env`, keys, or customer dumps.
+- CSRF: Next.js Server Actions / same-site cookies. No open CORS.
+- Uploads: type/size limits; do not serve user files as executable.
+- Rate-limit login. Hash passwords with a modern KDF (Auth.js defaults).
+
+## NDPR (customer data)
+- Collect only fields the workflow needs (name, phone, address, measurements).
+- No public customer list. Sales/owner/manager only.
+- Audit logs for order, payment, inventory, production, QC, overrides.
+- Do not log raw passwords, full card data, or unnecessary PII in console or `AuditLog` payloads.
+
+Workers see **assigned tasks**, not the full customer directory.

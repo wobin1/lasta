@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+:root {
+  --ground: #f4f5f7;
+  --surface: #ffffff;
+  --text: #111827;
+  --text-hover: #1f2937;
+  --muted: #4b5563;
+  --line: #e5e7eb;
+  --accent: #111827;
+  --info: #1d4ed8;
+  --warning: #c2410c;
+  --danger: #b91c1c;
+  --success: #166534;
+  --stage-1: #1d4ed8;
+  --stage-2: #c2410c;
+  --stage-3: #166534;
+  --stage-4: #111827;
+  --stage-5: #0f766e;
+  --stage-6: #6d28d9;
+  --stage-7: #be185d;
+  --stage-8: #0369a1;
+  --tint-info: #eff6ff;
+  --tint-warning: #fff7ed;
+  --tint-success: #ecfdf3;
+  --tint-danger: #f8eeee;
+  --radius: 24px;
+  --radius-control: 16px;
+  --shadow: 0 1px 2px rgb(17 24 39 / 0.06), 0 8px 24px rgb(17 24 39 / 0.04);
+  --motion: 240ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--ground);
+  color: var(--text);
+}
+
+.page-in {
+  animation: page-in var(--motion) var(--ease);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+dialog.sheet-dialog[open] {
+  animation: sheet-in 280ms var(--ease);
+}
+
+dialog.sheet-dialog[open]::backdrop {
+  background: rgb(17 24 39 / 0.45);
+  animation: backdrop-in 240ms ease-out;
+}
+
+dialog.sheet-dialog {
+  transition: width 280ms var(--ease);
+}
+
+dialog.confirm-dialog[open] {
+  animation: dialog-in 220ms var(--ease);
+}
+
+dialog.confirm-dialog[open]::backdrop {
+  background: rgb(17 24 39 / 0.45);
+  animation: backdrop-in 200ms ease-out;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+.select-menu {
+  animation: dialog-in 180ms var(--ease);
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-enter {
+  animation: toast-enter 280ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter,
+  .page-in,
+  .select-menu,
+  dialog.sheet-dialog[open],
+  dialog.sheet-dialog[open]::backdrop,
+  dialog.confirm-dialog[open],
+  dialog.confirm-dialog[open]::backdrop {
+    animation: none;
+  }
+
+  dialog.sheet-dialog {
+    transition: none;
+  }
+}

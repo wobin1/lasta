@@ -1,0 +1,29 @@
+---
+description: ISO 8601 time and ISO 4217 NGN money handling
+globs: "**/*.{ts,tsx,js,prisma}"
+alwaysApply: false
+---
+
+# Data: time and money
+
+## Time (ISO 8601)
+- Persist timestamps in **UTC** (`timestamptz`).
+- Display in `Africa/Lagos`. Format with a shared helper, never ad-hoc `toLocaleString` per screen.
+- Dates on orders (required delivery) are calendar dates in Lagos, stored unambiguously.
+
+## Money (ISO 4217 `NGN`)
+- Store integer **kobo** (`Int`). Never `Float`/`Decimal` for money in UI math without a library.
+- Display as ₦ with two decimal places via one formatter.
+- Sums happen in kobo on the server.
+
+```ts
+// ❌
+price: 150000.5
+<p>{order.total}</p>
+
+// ✅
+priceKobo: 15000000
+<p>{formatNgnFromKobo(order.totalKobo)}</p> // ₦150,000.00
+```
+
+IDs: `ORD-YYYY-#####`, `CUS-YYYY-#####` as specified. Do not invent a second ID scheme.

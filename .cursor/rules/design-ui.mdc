@@ -1,0 +1,16 @@
+Match [docs/design/ui-reference.png](docs/design/ui-reference.png) (Finora-like operations dashboard). Do not use the old Common Projects / Dribbble catalog look.
+
+**Shell (strict):**
+- Page is light gray. Header is **transparent** — logo + actions sit on the gray, **no header card**.
+- Left nav is a **floating white pill**, not full viewport height. Margin below the header and above the page bottom. Logo is in the header, not inside the nav pill.
+- Nav has **two modes**, user-switchable: **icon** (narrow, labels visually hidden) and **full** (labels beside icons). Persist the choice. Active item is a dark filled circle/pill, not a square tile.
+- A small separate pill under the nav switches icon ↔ full.
+
+**Type:** Inter. Bold page titles. No editorial serif.
+
+**Tokens (WCAG 2.2 AA):**
+- Ground `#f4f5f7`, surface white, text `#111827`, muted `#4b5563`, line `#e5e7eb`
+- Radius: cards **24px**; nav pill **999px / 28px**; controls **16px**
+- Shadow: very soft
+
+**Do:** generous padding, labels on metrics. **Don't:** boxed header, full-height sidebar, cream/serif catalog look, fake trend arrows.

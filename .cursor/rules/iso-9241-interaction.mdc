@@ -1,0 +1,29 @@
+---
+description: ISO 9241-110 interaction — errors, status, control, consistency, task fit
+globs: "**/*.{tsx,jsx,vue,css}"
+alwaysApply: false
+---
+
+# ISO 9241-110 interaction
+
+## 7.6 Error tolerance
+- Validate on blur and before submit. Disable submit while in-flight (no double submit).
+- Wrap route/app UI in error boundaries; failures must not wipe the whole shell.
+- Microcopy is non-technical. Every error has a recovery: retry, fix field, saved draft, or undo where data was mutated.
+- Destructive actions need confirm. Overrides (materials/payment) stay explicit and audited.
+
+## 7.2 Self-descriptiveness
+- Async work shows status immediately: skeleton or spinner, then result. Prefer optimistic UI only when rollback is defined.
+- Empty, loading, success, and error are distinct views. Never a blank panel.
+
+## 7.5 Controllability
+- Full keyboard and touch paths. Esc/cancel stops long requests where the server allows.
+- User can abandon a form without data loss when a draft exists (orders, measurements).
+
+## 7.3 Conformity with expectations
+- Same tokens, spacing scale, type, and patterns everywhere (buttons, tables, toasts).
+- Primary action is one per view. Status labels match the domain (`CONFIRMED`, not “OK”).
+
+## 7.1 Suitability for the task
+- Shop-floor: few taps to start/complete a task. Sales: no re-typing customer/phone/measurement.
+- Do not add fields, steps, or decoration that do not serve the current job.

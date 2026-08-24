@@ -1,0 +1,602 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  SALES
+  PRODUCTION_MANAGER
+  INVENTORY
+  QC
+  PRODUCTION_WORKER
+  FINISHING_WORKER
+  DELIVERY
+}
+
+enum CustomerSource {
+  WALK_IN
+  WEBSITE
+  REFERRAL
+  WHATSAPP
+  PHONE
+  SOCIAL
+  OTHER
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  CORPORATE
+  SCHOOL
+  OTHER
+}
+
+enum ProductStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  AWAITING_MATERIALS
+  READY_FOR_PRODUCTION
+  IN_PRODUCTION
+  QUALITY_CONTROL
+  FINISHING
+  READY_FOR_DELIVERY
+  DISPATCHED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+  RETURNED
+  REWORK_REQUIRED
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  POS
+}
+
+enum InventoryCategory {
+  LEATHER
+  SUEDE
+  FABRIC
+  LINING
+  SOLES
+  INSOLES
+  THREAD
+  GLUE
+  LACES
+  BUCKLES
+  ACCESSORIES
+  PACKAGING
+  OTHER
+}
+
+enum InventoryUnit {
+  PAIR
+  PIECE
+  METRE
+  ML
+  OTHER
+}
+
+enum InventoryTxnType {
+  PURCHASE
+  ISSUE
+  RETURN
+  ADJUSTMENT
+  DAMAGE
+  WASTE
+  STOCK_COUNT
+  RESERVE
+  UNRESERVE
+}
+
+enum PurchaseRequestStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  RECEIVED
+  CANCELLED
+}
+
+enum ProductionStage {
+  PATTERN_DRAFTING
+  CUTTING
+  STITCHING
+  LASTING
+  FILLING
+  SOLE_ATTACHMENT
+  FINISHING
+  QC
+}
+
+enum ProductionTaskStatus {
+  ASSIGNED
+  STARTED
+  COMPLETED
+  BLOCKED
+  AWAITING_QC
+}
+
+enum QcCheckpoint {
+  CUTTING
+  STITCHING
+  LASTING
+  FINAL
+}
+
+enum QcResult {
+  PASS
+  FAIL
+}
+
+enum WasteReason {
+  CUTTING_ERROR
+  MATERIAL_DEFECT
+  BAD_MEASUREMENT
+  DAMAGED
+  PRODUCTION_MISTAKE
+  DESIGN_CHANGE
+  OTHER
+}
+
+enum DeliveryType {
+  PICKUP
+  RIDER
+}
+
+enum DeliveryStatus {
+  READY
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CONFIRMED
+  FAILED
+}
+
+model User {
+  id                   String                  @id @default(cuid())
+  email                String                  @unique
+  passwordHash         String
+  name                 String
+  role                 Role
+  active               Boolean                 @default(true)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  measurements         Measurement[]
+  ordersSold           Order[]                 @relation("SalesOnOrder")
+  payments             Payment[]
+  auditLogs            AuditLog[]
+  inventoryTxns        InventoryTransaction[]
+  purchaseRequests     PurchaseRequest[]       @relation("PurchaseCreatedBy")
+  purchasesApproved    PurchaseRequest[]       @relation("PurchaseApprovedBy")
+  materialsOverrides   Order[]                 @relation("MaterialsOverride")
+  workerTemplates      WorkerTemplate[]
+  productionTasks      ProductionTask[]        @relation("TaskWorker")
+  notifications        Notification[]
+  qualityChecks        QualityCheck[]
+  defects              Defect[]                @relation("DefectWorker")
+  wasteRecords         WasteRecord[]
+  deliveriesCreated    Delivery[]              @relation("DeliveryCreatedBy")
+  deliveriesRiding     Delivery[]              @relation("DeliveryRider")
+  paymentOverrides     Order[]                 @relation("PaymentOverride")
+}
+
+model IdSequence {
+  kind String
+  year Int
+  last Int
+
+  @@id([kind, year])
+}
+
+model Customer {
+  id           String           @id @default(cuid())
+  publicId     String           @unique
+  fullName     String
+  phone        String           @unique
+  email        String?
+  address      String?
+  type         CustomerType     @default(INDIVIDUAL)
+  source       CustomerSource   @default(WALK_IN)
+  notes        String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  measurements Measurement[]
+  orders       Order[]
+}
+
+model Measurement {
+  id               String      @id @default(cuid())
+  customerId       String
+  customer         Customer    @relation(fields: [customerId], references: [id])
+  measuredByUserId String
+  measuredBy       User        @relation(fields: [measuredByUserId], references: [id])
+  takenAt          DateTime    @default(now())
+  leftLength       Float?
+  leftWidth        Float?
+  leftInstep       Float?
+  leftHeel         Float?
+  leftAnkle        Float?
+  rightLength      Float?
+  rightWidth       Float?
+  rightInstep      Float?
+  rightHeel        Float?
+  rightAnkle       Float?
+  notes            String?
+  orderItems       OrderItem[]
+
+  @@index([customerId])
+}
+
+model ProductCategory {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  products  Product[]
+}
+
+model Product {
+  id              String           @id @default(cuid())
+  name            String
+  categoryId      String
+  category        ProductCategory  @relation(fields: [categoryId], references: [id])
+  description     String?
+  priceKobo       Int
+  productionDays  Int              @default(14)
+  status          ProductStatus    @default(ACTIVE)
+  imageUrl        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  orderItems             OrderItem[]
+  bomLines               BomLine[]
+  productionTemplateId   String?
+  productionTemplate     ProductionTemplate? @relation(fields: [productionTemplateId], references: [id], onDelete: SetNull)
+  omittedStages          ProductStageOmit[]
+
+  @@index([categoryId])
+  @@index([productionTemplateId])
+}
+
+model Order {
+  id                       String                  @id @default(cuid())
+  publicId                 String                  @unique
+  customerId               String
+  customer                 Customer                @relation(fields: [customerId], references: [id])
+  source                   CustomerSource          @default(WALK_IN)
+  status                   OrderStatus             @default(DRAFT)
+  requiredDate             DateTime                @db.Date
+  notes                    String?
+  assignedSalesId          String
+  assignedSales            User                    @relation("SalesOnOrder", fields: [assignedSalesId], references: [id])
+  totalKobo                Int                     @default(0)
+  materialsOverride        Boolean                 @default(false)
+  materialsOverrideAt      DateTime?
+  materialsOverrideById    String?
+  materialsOverrideBy      User?                   @relation("MaterialsOverride", fields: [materialsOverrideById], references: [id])
+  materialsOverrideReason  String?
+  paymentOverride          Boolean                 @default(false)
+  paymentOverrideAt        DateTime?
+  paymentOverrideById      String?
+  paymentOverrideBy        User?                   @relation("PaymentOverride", fields: [paymentOverrideById], references: [id])
+  paymentOverrideReason    String?
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  items                    OrderItem[]
+  payments                 Payment[]
+  inventoryTxns            InventoryTransaction[]
+  purchaseRequests         PurchaseRequest[]
+  wasteRecords             WasteRecord[]
+  delivery                 Delivery?
+
+  @@index([status])
+  @@index([requiredDate])
+}
+
+model OrderItem {
+  id             String       @id @default(cuid())
+  orderId        String
+  order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  size           String
+  measurementId  String?
+  measurement    Measurement? @relation(fields: [measurementId], references: [id])
+  quantity       Int
+  unitPriceKobo   Int
+  notes           String?
+  productionJob   ProductionJob?
+  qualityChecks   QualityCheck[]
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  orderId      String
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amountKobo   Int
+  method       PaymentMethod
+  paidAt       DateTime      @default(now())
+  reference    String?
+  recordedById String
+  recordedBy   User          @relation(fields: [recordedById], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  entity    String
+  entityId  String
+  action    String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
+
+model InventoryItem {
+  id            String                  @id @default(cuid())
+  name          String
+  category      InventoryCategory       @default(OTHER)
+  color         String?
+  type          String?
+  unit          InventoryUnit
+  qtyOnHand     Decimal                 @default(0) @db.Decimal(14, 3)
+  qtyReserved   Decimal                 @default(0) @db.Decimal(14, 3)
+  minStock      Decimal                 @default(0) @db.Decimal(14, 3)
+  reorderLevel  Decimal                 @default(0) @db.Decimal(14, 3)
+  costKobo      Int?
+  supplierName  String?
+  notes         String?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  transactions  InventoryTransaction[]
+  bomLines      BomLine[]
+  purchaseLines PurchaseRequestLine[]
+  wasteRecords  WasteRecord[]
+
+  @@index([category])
+  @@index([name])
+}
+
+model InventoryTransaction {
+  id          String           @id @default(cuid())
+  itemId      String
+  item        InventoryItem    @relation(fields: [itemId], references: [id])
+  type        InventoryTxnType
+  qty         Decimal          @db.Decimal(14, 3)
+  unit        InventoryUnit
+  orderId     String?
+  order       Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  reason      String?
+  createdById String
+  createdBy   User             @relation(fields: [createdById], references: [id])
+  taskId      String?
+  task        ProductionTask?  @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  wasteRecord WasteRecord?
+  createdAt   DateTime         @default(now())
+
+  @@index([itemId, createdAt])
+  @@index([orderId])
+  @@index([type])
+  @@index([taskId])
+}
+
+model BomLine {
+  id               String        @id @default(cuid())
+  productId        String
+  product          Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventoryItemId  String
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  qtyPerPair       Decimal       @db.Decimal(14, 3)
+  unit             InventoryUnit
+
+  @@unique([productId, inventoryItemId])
+}
+
+model PurchaseRequest {
+  id             String                 @id @default(cuid())
+  publicId       String                 @unique
+  status         PurchaseRequestStatus  @default(DRAFT)
+  notes          String?
+  orderId        String?
+  order          Order?                 @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdById    String
+  createdBy      User                   @relation("PurchaseCreatedBy", fields: [createdById], references: [id])
+  approvedById   String?
+  approvedBy     User?                  @relation("PurchaseApprovedBy", fields: [approvedById], references: [id])
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  lines          PurchaseRequestLine[]
+}
+
+model PurchaseRequestLine {
+  id               String          @id @default(cuid())
+  requestId        String
+  request          PurchaseRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  inventoryItemId  String
+  inventoryItem    InventoryItem   @relation(fields: [inventoryItemId], references: [id])
+  qty              Decimal         @db.Decimal(14, 3)
+}
+
+model ProductionTemplate {
+  id        String          @id @default(cuid())
+  name      String          @unique
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  stages    TemplateStage[]
+  workers   WorkerTemplate[]
+  products  Product[]
+  jobs      ProductionJob[]
+}
+
+model TemplateStage {
+  id         String             @id @default(cuid())
+  templateId String
+  template   ProductionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  stage      ProductionStage
+  sortOrder  Int
+
+  @@unique([templateId, stage])
+  @@index([templateId, sortOrder])
+}
+
+model WorkerTemplate {
+  userId     String
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String
+  template   ProductionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@id([userId, templateId])
+}
+
+model ProductStageOmit {
+  productId String
+  product   Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  stage     ProductionStage
+
+  @@id([productId, stage])
+}
+
+model ProductionJob {
+  id             String             @id @default(cuid())
+  orderItemId    String             @unique
+  orderItem      OrderItem          @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  templateId     String
+  template       ProductionTemplate @relation(fields: [templateId], references: [id])
+  templateName   String
+  createdAt      DateTime           @default(now())
+  tasks          ProductionTask[]
+}
+
+model ProductionTask {
+  id           String                @id @default(cuid())
+  jobId        String
+  job          ProductionJob         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  stage        ProductionStage
+  sortOrder    Int
+  workerId     String?
+  worker       User?                 @relation("TaskWorker", fields: [workerId], references: [id])
+  qty          Int
+  status       ProductionTaskStatus  @default(ASSIGNED)
+  enteredAt    DateTime              @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  notes        String?
+  issues       InventoryTransaction[]
+  qualityChecks QualityCheck[]
+  wasteRecords  WasteRecord[]
+
+  @@unique([jobId, stage])
+  @@index([stage, status])
+  @@index([workerId])
+}
+
+model QualityCheck {
+  id               String         @id @default(cuid())
+  orderItemId      String
+  orderItem        OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  checkpoint       QcCheckpoint
+  result           QcResult
+  checklist        Json
+  notes            String?
+  inspectorId      String
+  inspector        User           @relation(fields: [inspectorId], references: [id])
+  productionTaskId String?
+  productionTask   ProductionTask? @relation(fields: [productionTaskId], references: [id], onDelete: SetNull)
+  createdAt        DateTime       @default(now())
+  defects          Defect[]
+
+  @@index([orderItemId, checkpoint])
+  @@index([productionTaskId])
+}
+
+model Defect {
+  id             String       @id @default(cuid())
+  qualityCheckId String
+  qualityCheck   QualityCheck @relation(fields: [qualityCheckId], references: [id], onDelete: Cascade)
+  checkpoint     QcCheckpoint
+  reason         String
+  workerId       String?
+  worker         User?        @relation("DefectWorker", fields: [workerId], references: [id])
+  notes          String?
+  createdAt      DateTime     @default(now())
+
+  @@index([checkpoint])
+  @@index([createdAt])
+}
+
+model WasteRecord {
+  id            String             @id @default(cuid())
+  itemId        String
+  item          InventoryItem      @relation(fields: [itemId], references: [id])
+  qty           Decimal            @db.Decimal(14, 3)
+  reason        WasteReason
+  orderId       String?
+  order         Order?             @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  stage         ProductionStage?
+  taskId        String?
+  task          ProductionTask?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  transactionId String             @unique
+  transaction   InventoryTransaction @relation(fields: [transactionId], references: [id])
+  notes         String?
+  createdById   String
+  createdBy     User               @relation(fields: [createdById], references: [id])
+  createdAt     DateTime           @default(now())
+
+  @@index([orderId])
+  @@index([itemId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Delivery {
+  id            String         @id @default(cuid())
+  orderId       String         @unique
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  type          DeliveryType
+  status        DeliveryStatus @default(READY)
+  address       String?
+  phone         String
+  riderUserId   String?
+  rider         User?          @relation("DeliveryRider", fields: [riderUserId], references: [id])
+  feeKobo       Int            @default(0)
+  failReason    String?
+  notes         String?
+  readyAt       DateTime       @default(now())
+  assignedAt    DateTime?
+  pickedUpAt    DateTime?
+  inTransitAt   DateTime?
+  deliveredAt   DateTime?
+  confirmedAt   DateTime?
+  failedAt      DateTime?
+  createdById   String
+  createdBy     User           @relation("DeliveryCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status])
+  @@index([riderUserId])
+}

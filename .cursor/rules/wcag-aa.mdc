@@ -1,0 +1,29 @@
+---
+description: WCAG 2.2 AA / ISO 9241-171 / ISO/IEC 40500 accessibility
+globs: "**/*.{tsx,jsx,html}"
+alwaysApply: false
+---
+
+# Accessibility (WCAG 2.2 AA)
+
+- Semantic HTML first (`button`, `label`, `nav`, `main`, `table`). ARIA only when semantics are insufficient.
+- Text contrast ≥ **4.5:1**; large text and UI chrome ≥ **3:1** (1.4.3, 1.4.11).
+- Do not convey meaning by color only (1.4.1): add text or icon.
+- Visible focus (2.4.7). Focus order matches reading order. Modals trap and restore focus.
+- Controls: name, role, value. Inputs have associated `<label>`. Errors in text, linked via `aria-describedby`.
+- Target size ≥ 24×24px (2.5.8); **44×44px** on `/production/me` and shop-floor flows.
+- Images: `alt` for product/measurement/QC photos; empty `alt` only if decorative.
+- Motion: respect `prefers-reduced-motion`. Do not auto-play video.
+- Language: `lang="en"` on the document.
+- Keyboard: all actions reachable without a pointer. Do not keyboard-trap except dialogs.
+
+```tsx
+// ❌
+<div onClick={save}>Save</div>
+<input placeholder="Phone" />
+
+// ✅
+<button type="submit">Save</button>
+<label htmlFor="phone">Phone</label>
+<input id="phone" type="tel" autoComplete="tel" />
+```

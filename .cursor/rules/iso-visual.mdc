@@ -1,0 +1,22 @@
+---
+description: ISO 9241-125 and ISO/IEC 25010 visual presentation and aesthetics
+globs: "**/*.{tsx,jsx,css,scss}"
+alwaysApply: false
+---
+
+# Visual presentation (ISO 9241-125, ISO/IEC 25010)
+
+## Harmony and balance
+- One spacing scale (e.g. 4/8/12/16/24/32/48). Same padding on comparable regions.
+- Align to a grid. Do not mix leftover margins.
+- Type: clear hierarchy (page title → section → body → meta). Consistent weights and line-height. Reading order is visual order.
+- Density: spacious dashboard cards (24px radius). Tables live inside cards. One soft shadow on surfaces, not stacked chrome.
+
+## Information architecture
+- Label sits with its control (not a distant table header only). Related actions group together.
+- Tokens only: background, surface, text, text-muted, line, accent, danger, success, warning. No one-off hex in components.
+- Every interactive component has **default, hover, focus, active, disabled, loading, empty, error**. If a state exists in logic, it is visible.
+
+## Contrast and perception
+- See `wcag-aa.mdc`. Status is never color alone (icon + text).
+- Focus ring is visible. Touch targets 44×44px on worker phones; never under 24×24px.

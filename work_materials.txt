@@ -1,0 +1,7 @@
+UI design to work with:
+docs/design/ui-reference.png
+(Finora-style operations dashboard: gray canvas, white rounded cards, icon sidebar, top profile bar.)
+
+The Dribbble Common Projects catalog is retired.
+
+Standards: see .cursor/rules/ (ISO 9241-110/125/171, ISO/IEC 25010, WCAG 2.2 AA, ISO 8601, ISO 4217 NGN, OWASP, NDPR).
