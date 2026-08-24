@@ -4,6 +4,12 @@ import { Prisma, PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  const alreadySeeded = (await prisma.user.count()) > 0;
+  if (alreadySeeded && process.env.SEED_FORCE !== "true") {
+    console.log("Seed skipped: the database already has users.");
+    return;
+  }
+
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "owner@local.test";
   const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "changeme";
   const salesEmail = process.env.SEED_SALES_EMAIL ?? "sales@local.test";
