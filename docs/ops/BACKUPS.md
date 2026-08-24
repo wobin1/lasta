@@ -7,13 +7,13 @@ Postgres is the source of truth. Back it up before every migrate and every day i
 Keep the dump **off the app machine**.
 
 ```bash
-pg_dump "$DATABASE_URL" --format=custom --file="atelier-$(date -u +%Y%m%d).dump"
+pg_dump "$DATABASE_URL" --format=custom --file="lasta-$(date -u +%Y%m%d).dump"
 ```
 
 Restore:
 
 ```bash
-pg_restore --clean --if-exists --dbname="$DATABASE_URL" atelier-YYYYMMDD.dump
+pg_restore --clean --if-exists --dbname="$DATABASE_URL" lasta-YYYYMMDD.dump
 ```
 
 ## Before a release

@@ -1,4 +1,5 @@
 import { OrderStatus } from "@prisma/client";
+import { APP_NAME } from "./brand";
 import { orderStatusLabel } from "./labels";
 import { prisma } from "./prisma";
 
@@ -21,18 +22,18 @@ function subjectFor(status: OrderStatus, publicId: string) {
 function bodyFor(status: OrderStatus, publicId: string, name: string) {
   const greeting = `Hello ${name},`;
   if (status === "CONFIRMED" || status === "READY_FOR_PRODUCTION") {
-    return `${greeting}\n\nWe have confirmed order ${publicId}. We will write again when it is ready.\n\nAtelier`;
+    return `${greeting}\n\nWe have confirmed order ${publicId}. We will write again when it is ready.\n\n${APP_NAME}`;
   }
   if (status === "READY_FOR_DELIVERY") {
-    return `${greeting}\n\nOrder ${publicId} is ready for collection or delivery.\n\nAtelier`;
+    return `${greeting}\n\nOrder ${publicId} is ready for collection or delivery.\n\n${APP_NAME}`;
   }
   if (status === "DISPATCHED") {
-    return `${greeting}\n\nOrder ${publicId} has left the workshop and is on the way.\n\nAtelier`;
+    return `${greeting}\n\nOrder ${publicId} has left the workshop and is on the way.\n\n${APP_NAME}`;
   }
   if (status === "DELIVERED" || status === "COMPLETED") {
-    return `${greeting}\n\nOrder ${publicId} is complete. Thank you.\n\nAtelier`;
+    return `${greeting}\n\nOrder ${publicId} is complete. Thank you.\n\n${APP_NAME}`;
   }
-  return `${greeting}\n\nOrder ${publicId} is now ${orderStatusLabel[status]}.\n\nAtelier`;
+  return `${greeting}\n\nOrder ${publicId} is now ${orderStatusLabel[status]}.\n\n${APP_NAME}`;
 }
 
 export async function notifyCustomerStatus(orderId: string, status: OrderStatus) {
@@ -55,7 +56,7 @@ export async function notifyCustomerStatus(orderId: string, status: OrderStatus)
 
 async function sendMail(input: { to: string; subject: string; text: string }) {
   const webhook = process.env.EMAIL_WEBHOOK_URL?.trim();
-  const from = process.env.SMTP_FROM?.trim() || process.env.EMAIL_FROM?.trim() || "Atelier";
+  const from = process.env.SMTP_FROM?.trim() || process.env.EMAIL_FROM?.trim() || APP_NAME;
   if (!webhook) {
     if (process.env.NODE_ENV !== "production") {
       console.info(`[email skipped] to=${input.to} subject=${input.subject}`);

@@ -7,10 +7,11 @@ import { Role } from "@prisma/client";
 import { logoutAction } from "@/app/actions/auth";
 import { Toaster } from "@/components/Toaster";
 import { can, homePath, isShopFloorRole, type Action, roleLabel } from "@/lib/permissions";
+import { APP_INITIAL, APP_NAME } from "@/lib/brand";
 import type { FlashToast } from "@/lib/flash-types";
 
 type NavMode = "icon" | "full";
-const NAV_KEY = "atelier-nav";
+const NAV_KEY = "lasta-nav";
 
 type NavItem = {
   href: string;
@@ -89,12 +90,16 @@ export function AppChrome({
       <header className="mb-8 flex items-center justify-between bg-transparent">
         <Link
           href={homePath(role)}
+          aria-label={`${APP_NAME} home`}
           className="flex items-center gap-3 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text)]"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--text)] text-sm font-semibold text-white">
-            A
+          <span
+            aria-hidden
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--text)] text-sm font-semibold text-white"
+          >
+            {APP_INITIAL}
           </span>
-          <span className="text-xl font-semibold tracking-tight">Atelier</span>
+          <span className="text-xl font-semibold tracking-tight">{APP_NAME}</span>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
           <button

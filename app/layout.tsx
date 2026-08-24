@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { APP_NAME } from "@/lib/brand";
 import "./globals.css";
 
 const sans = Inter({
@@ -8,7 +9,7 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Atelier — Workshop",
+  title: APP_NAME,
   description: "Shoe manufacturing and business management",
 };
 

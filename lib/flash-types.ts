@@ -1,4 +1,4 @@
-export const FLASH_COOKIE = "atelier-toast";
+export const FLASH_COOKIE = "lasta-toast";
 
 export type FlashToast = {
   id: string;
